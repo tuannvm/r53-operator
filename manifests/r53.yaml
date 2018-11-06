@@ -1,0 +1,13 @@
+apiVersion: route53.tuannvm.com/v1alpha1
+kind: Route53
+metadata:
+  name: sample-route53
+spec:
+  selector:
+    k8s-app: nginx-ingress-controller
+  Type: CNAME
+  RoutingPolicy: Weighted
+  Records:
+    sample1.example.com: 50
+    sample2.example.com: 50
+  TTL: 60

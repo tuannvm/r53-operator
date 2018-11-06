@@ -1,0 +1,14 @@
+CODE_GENERATOR_IMAGE := slok/kube-code-generator:v1.11.3
+DIRECTORY := $(PWD)
+CODE_GENERATOR_PACKAGE := github.com/tuannvm/r53-operator
+GROUPS_VERSION := "route53:v1alpha1"
+
+generate:
+	docker run --rm -it \
+	-v $(DIRECTORY):/go/src/$(CODE_GENERATOR_PACKAGE) \
+	-e PROJECT_PACKAGE=$(CODE_GENERATOR_PACKAGE) \
+	-e CLIENT_GENERATOR_OUT=$(CODE_GENERATOR_PACKAGE)/client/k8s \
+	-e APIS_ROOT=$(CODE_GENERATOR_PACKAGE)/apis \
+	-e GROUPS_VERSION=$(GROUPS_VERSION) \
+	-e GENERATION_TARGETS="deepcopy,client" \
+	$(CODE_GENERATOR_IMAGE)
