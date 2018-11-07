@@ -24,8 +24,6 @@ type Route53 struct {
 
 // Route53Spec is the spec for a Route53 resource.
 type Route53Spec struct {
-	// Selector is how the target will be selected.
-	Selector map[string]string `json:"selector,omitempty"`
 	// Type of route53 record.
 	// More info: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/ResourceRecordTypes.html
 	Type string `json:"type,omitempty"`
@@ -34,6 +32,10 @@ type Route53Spec struct {
 	RoutingPolicy string `json:"routing_policy,omitempty"`
 	// Records is a map of domains (in CNAME)
 	Records map[string]int64 `json:"records,omitempty"`
+	// Name is record name to create
+	Name string `json:"name,omitempty"`
+	// Domain the based domain name
+	Domain string `json:"domain,omitempty"`
 	// TTL time to live
 	TTL    int64 `json:"ttl,omitempty"`
 	DryRun bool  `json:"dryRun,omitempty"`
