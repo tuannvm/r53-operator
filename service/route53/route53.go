@@ -46,7 +46,6 @@ func Newroute53(k8sCli kubernetes.Interface, logger log.Logger) *route53 {
 // EnsureRoute53 satisfies route53Syncer interface.
 func (c *route53) EnsureRoute53(pt *route53v1alpha1.Route53) error {
 	zoneID, err := c.awsClient.GetHostedZoneID(pt.Spec.Domain)
-	c.logger.Infof("Error here %v", pt.Spec)
 	if err != nil {
 		return err
 	}
@@ -54,10 +53,11 @@ func (c *route53) EnsureRoute53(pt *route53v1alpha1.Route53) error {
 	records := pt.Spec.Records
 	for record, weight := range records {
 		err := c.awsClient.ChangeRoute53Record(zoneID, &awsRoute53.ResourceRecordSet{
-			Name:   aws.String(pt.Spec.Domain),
-			TTL:    aws.Int64(pt.Spec.TTL),
-			Type:   aws.String(pt.Spec.Type),
-			Weight: aws.Int64(weight),
+			Name:          aws.String(pt.Spec.Name + "." + pt.Spec.Domain),
+			TTL:           aws.Int64(pt.Spec.TTL),
+			Type:          aws.String(pt.Spec.Type),
+			Weight:        aws.Int64(weight),
+			SetIdentifier: aws.String(record),
 			ResourceRecords: []*awsRoute53.ResourceRecord{
 				{
 					Value: aws.String(record),
