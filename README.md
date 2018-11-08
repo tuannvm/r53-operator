@@ -2,7 +2,7 @@
 
 **NOTE**: This is an alpha-status project. We do regular tests on the code and functionality, but we can not assure a production-ready stability.
 
-route53 Operator creates/configures/manages route53-failovers atop Kubernetes.
+route53 operator create/manage/delete route53 records atop Kubernetes.
 
 ## Requirements
 
