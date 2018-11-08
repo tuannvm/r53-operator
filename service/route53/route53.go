@@ -1,6 +1,7 @@
 package route53
 
 import (
+	"errors"
 	"sync"
 
 	"k8s.io/client-go/kubernetes"
@@ -45,13 +46,37 @@ func Newroute53(k8sCli kubernetes.Interface, logger log.Logger) *route53 {
 
 // EnsureRoute53 satisfies route53Syncer interface.
 func (c *route53) EnsureRoute53(pt *route53v1alpha1.Route53) error {
+	err := c.updateRecord(pt, "UPSERT")
+	if err != nil {
+		return err
+	}
+	c.logger.Infof("record %s is up-to-date!", pt.Spec.Name+"."+pt.Spec.Domain)
+	c.reg.Store(pt.Name, pt)
+	return nil
+}
+
+// DeleteRoute53 satisfies route53Syncer interface.
+func (c *route53) DeleteRoute53(name string) error {
+	pt, ok := c.reg.Load(name)
+	if !ok {
+		return errors.New("something wrong")
+	}
+	err := c.updateRecord(pt.(*route53v1alpha1.Route53), "DELETE")
+	if err != nil {
+		return err
+	}
+	c.logger.Infof("record has been deleted")
+	return nil
+}
+
+func (c *route53) updateRecord(pt *route53v1alpha1.Route53, action string) error {
+
 	zoneID, err := c.awsClient.GetHostedZoneID(pt.Spec.Domain)
 	if err != nil {
 		return err
 	}
 
-	records := pt.Spec.Records
-	for record, weight := range records {
+	for record, weight := range pt.Spec.Records {
 		err := c.awsClient.ChangeRoute53Record(zoneID, &awsRoute53.ResourceRecordSet{
 			Name:          aws.String(pt.Spec.Name + "." + pt.Spec.Domain),
 			TTL:           aws.Int64(pt.Spec.TTL),
@@ -63,17 +88,10 @@ func (c *route53) EnsureRoute53(pt *route53v1alpha1.Route53) error {
 					Value: aws.String(record),
 				},
 			},
-		}, aws.String("UPSERT"))
+		}, aws.String(action))
 		if err != nil {
 			return err
 		}
 	}
-
-	return nil
-}
-
-// DeleteRoute53 satisfies route53Syncer interface.
-func (c *route53) DeleteRoute53(name string) error {
-	c.logger.Infof("456")
 	return nil
 }
